@@ -21,7 +21,9 @@ class XML {
     }
 }
 
-XML.parse = function XMLParser(xmlText) {
+XML.ATTR_SIGN = '@';
+
+XML.parse = function XMLParser(xmlText, includeRoot=false) {
     const template = `<(\/)?([a-z-_]+)([^>]*?)(\/)?>`;
     const hashmap = {};
     const data = {};
@@ -37,10 +39,14 @@ XML.parse = function XMLParser(xmlText) {
 
         start += matches.index + rawText.length;
 
-        dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs);
-        hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, start);
+        if (includeRoot) {
+            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs, XML.ATTR_SIGN);
+            hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, start);
 
-        depth += 1;
+            depth += 1;
+        } else if (attrs) {
+            Object.assign(data, parseAttributes(attrs, XML.ATTR_SIGN));
+        }
     }
 
     while (matches = new RegExp(template, 'img').exec(xmlText.substr(start))) {
@@ -77,7 +83,7 @@ XML.parse = function XMLParser(xmlText) {
 
         else {
             // logTree(depth, tagName);
-            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs);
+            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs, XML.ATTR_SIGN);
             hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, start);
 
             if (depth > 0) {
@@ -97,11 +103,8 @@ XML.stringify = function XMLStringify(xmlData, indent=4, version='1.0', encoding
 }
 
 
-function xmlUpdateDataEntry(entry, tagName, attrs) {
-    entry[ tagName ] = attrs 
-        ? { attributes: parseAttributes(attrs.trim()) }
-        : {}
-    ;
+function xmlUpdateDataEntry(entry, tagName, attrs, prefix='') {
+    entry[ tagName ] = parseAttributes(attrs, prefix);
     return entry[ tagName ];
 }
 
@@ -109,13 +112,14 @@ function xmlCreateHashmapRecord(reference, tagName, start) {
     return { hasTags: false, reference, tagName, start };
 }
 
-function parseAttributes(text) {
+function parseAttributes(text, prefix='') {
     const attributes = {};
     let last = 0;
     let matches;
 
     while (matches = /([\w]+)=["'](.*?)['"]/img.exec(text.substr(last))) {
-        const [ rawText, propertyName, value ] = [ ...matches ];
+        let [ rawText, propertyName, value ] = [ ...matches ];
+        propertyName = prefix + propertyName;
         last += matches.index + rawText.length;
         attributes[ propertyName ] = value;
     }
