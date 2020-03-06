@@ -60,7 +60,6 @@ XML.parse = function XMLParser(xmlText, includeRoot=false) {
     const data = {};
     let dataEntry = data;
     let start = 0;
-    let end = 0;
     let depth = 0;
     let matches;
 
@@ -83,20 +82,20 @@ XML.parse = function XMLParser(xmlText, includeRoot=false) {
     while (matches = new RegExp(template, 'img').exec(xmlText.substr(start))) {
         const [ rawText, PAIRED_CLOSED, tagName, attrs, SINGLE_CLOSED ] = [ ...matches ];
         start += matches.index + rawText.length;
-        end = start - rawText.length;
 
         if (PAIRED_CLOSED) {
             depth -= 1;
 
-            const hmapEntry = hashmap[ depth ];
+            const end = start - rawText.length;
+            const element = hashmap[ depth ];
 
             if (depth > 0) {
                 dataEntry = hashmap[ depth-1 ].reference;
             }
 
             // Define as a primitive property
-            if (!hmapEntry.hasTags) {
-                dataEntry[ hmapEntry.tagName ] = xmlText.substring(hmapEntry.start, end);
+            if (!element.hasTags) {
+                dataEntry[ element.tagName ] = xmlText.substring(element.start, end);
             }
 
             delete hashmap[ depth ];
