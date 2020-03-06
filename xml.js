@@ -12,7 +12,7 @@
  *
  * @file
  * @ingroup Modules
- * @version 1.0
+ * @version 1.1-beta
  * @license MIT
  * @author Alexander Yukal <yukal@email.ua>
  */
@@ -55,7 +55,7 @@ XML.ATTR_SIGN = '@';
  * @returns {Object} Nested object
  */
 XML.parse = function XMLParser(xmlText, includeRoot=false) {
-    const template = `<(\/)?([a-z-_]+)([^>]*?)(\/)?>`;
+    const template = `<(\/)?([:a-z-_]+)([^>]*?)(\/)?>`;
     const hashmap = {};
     const data = {};
     let dataEntry = data;
@@ -134,8 +134,22 @@ XML.stringify = function XMLStringify(xmlData, indent=4, version='1.0', encoding
 
 
 function xmlUpdateDataEntry(entry, tagName, attrs, prefix='') {
-    entry[ tagName ] = parseAttributes(attrs, prefix);
-    return entry[ tagName ];
+    const attributes = parseAttributes(attrs, prefix);
+
+    if (entry.hasOwnProperty(tagName)) {
+        const currEntry = entry[ tagName ];
+
+        if (Array.isArray(currEntry)) {
+            currEntry.push(attributes);
+        } else {
+            entry[ tagName ] = [ currEntry, attributes ];
+        }
+
+    } else {
+        entry[ tagName ] = attributes;
+    }
+
+    return attributes;
 }
 
 function xmlCreateHashmapRecord(reference, tagName, start) {
