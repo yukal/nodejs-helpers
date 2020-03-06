@@ -3,6 +3,8 @@
  *
  * A simple XML module that implements several methods that are absent in Node.js, 
  * the purpose of which is to convert data from XML text to an object and vice versa.
+ * It's useful for the REST data exchanges. But it does not support text data tags 
+ * with other tags inside, by now.
  *
  * usage:
  *   XML.stringify(xmlObject)
@@ -21,8 +23,37 @@ class XML {
     }
 }
 
+/**
+ * XML.ATTR_SIGN
+ * The symbol for the paired-tag key-name attribute.
+ *
+ * Example:
+ *   <package fruit="banana">
+ *       <fruit tasty="yes" ripe="80%" />
+ *   </package>
+ *
+ * Result:
+ *   {
+ *       "package": {
+ *           "@fruit": "banana",
+ *           "fruit": {
+ *                "tasty": "yes",
+ *                "ripe": "80%"
+ *           }
+ *       }
+ *   }
+ */
 XML.ATTR_SIGN = '@';
 
+/**
+ * XML.parse
+ * Parse the XML text and return the result as a data object.
+ * Not supported for text data tags with other tags inside, for now.
+ * 
+ * @param {String} xmlText Text with an XML content
+ * @param {Bool} includeRoot Whether should the root tag be included in the result of the object
+ * @returns {Object} Nested object
+ */
 XML.parse = function XMLParser(xmlText, includeRoot=false) {
     const template = `<(\/)?([a-z-_]+)([^>]*?)(\/)?>`;
     const hashmap = {};
