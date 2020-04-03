@@ -3,8 +3,7 @@
  *
  * A simple XML module that implements several methods that are absent in Node.js, 
  * the purpose of which is to convert data from XML text to an object and vice versa.
- * It's useful for the REST data exchanges. But it does not support text data tags 
- * with other tags inside, by now.
+ * It's useful for the REST/SOAP data exchanges.
  *
  * usage:
  *   XML.stringify(xmlObject)
@@ -12,7 +11,7 @@
  *
  * @file
  * @ingroup Modules
- * @version 1.1-beta
+ * @version 1.2-beta
  * @license MIT
  * @author Alexander Yukal <yukal@email.ua>
  */
@@ -48,54 +47,83 @@ XML.ATTR_SIGN = '@';
 /**
  * XML.parse
  * Parse the XML text and return the result as a data object.
- * Not supported for text data tags with other tags inside, for now.
  * 
  * @param {String} xmlText Text with an XML content
- * @param {Bool} includeRoot Whether should the root tag be included in the result of the object
+ * @param {Bool} rawInnerTags [optional] 
  * @returns {Object} Nested object
  */
-XML.parse = function XMLParser(xmlText, includeRoot=false) {
+XML.parse = function XMLParser(xmlText, rawInnerTags=true) {
     const template = `<(\/)?([:a-z-_]+)([^>]*?)(\/)?>`;
     const hashmap = {};
     const data = {};
     let dataEntry = data;
-    let start = 0;
+    let posStart = 0;
+    let posLast = 0;
     let depth = 0;
     let matches;
 
     if (matches = /<\?xml(.*?)\?>/.exec(xmlText)) {
         const [ rawText, attrs ] = [ ...matches ];
-        const tagName = 'xml';
+        posLast += matches.index + rawText.length;
+        posStart = posLast - rawText.length;
 
-        start += matches.index + rawText.length;
-
-        if (includeRoot) {
-            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs, XML.ATTR_SIGN);
-            hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, start);
-
-            depth += 1;
-        } else if (attrs) {
-            Object.assign(data, parseAttributes(attrs, XML.ATTR_SIGN));
-        }
+        Object.assign(data, parseAttributes(attrs, XML.ATTR_SIGN));
     }
 
-    while (matches = new RegExp(template, 'img').exec(xmlText.substr(start))) {
+    while (matches = new RegExp(template, 'img').exec(xmlText.substr(posLast))) {
         const [ rawText, PAIRED_CLOSED, tagName, attrs, SINGLE_CLOSED ] = [ ...matches ];
-        start += matches.index + rawText.length;
+        posLast += matches.index + rawText.length;
+        posStart = posLast - rawText.length;
 
         if (PAIRED_CLOSED) {
             depth -= 1;
 
-            const end = start - rawText.length;
             const element = hashmap[ depth ];
+            const innerText = xmlText.substring(element.pos, posStart);
 
             if (depth > 0) {
-                dataEntry = hashmap[ depth-1 ].reference;
-            }
+                const topElement = hashmap[ depth-1 ];
+                dataEntry = topElement.reference;
 
-            // Define as a primitive property
-            if (!element.hasTags) {
-                dataEntry[ element.tagName ] = xmlText.substring(element.start, end);
+                if (element.pos == topElement.pos) {
+                    topElement.buf += innerText.trim();
+                    topElement.pos = posLast;
+
+                    if (innerText.length) {
+                        if (dataEntry.hasOwnProperty(element.tagName)) {
+                            if (typeof element.reference == 'string') {
+                                // Update primitive property
+                                element.reference += innerText;
+                            } else {
+                                element.reference._innerText = innerText.trim();
+                                element.reference._outerText = xmlText.substring(element.posStartTag, posLast);
+                            }
+                        } else {
+                            if (element.hasAttributes) {
+                                element.reference._innerText = innerText.trim();
+                                element.reference._outerText = xmlText.substring(element.posStartTag, posLast);
+                            } else {
+                                // Define as a primitive property
+                                dataEntry[ element.tagName ] = innerText;
+                            }
+                        }
+                    }
+
+                } else {
+
+                    element.buf += innerText;
+
+                    if (/\S/.test(element.buf)) {
+                        if (element.hasAttributes || element.hasTags) {
+                            element.reference._innerText = xmlText.substring(element.posStartText, posStart).trim();
+                            element.reference._outerText = xmlText.substring(element.posStartTag, posLast).trim();
+                        } else {
+                            // Define as a primitive property
+                            element.reference = innerText;
+                        }
+                    }
+
+                }
             }
 
             delete hashmap[ depth ];
@@ -113,12 +141,17 @@ XML.parse = function XMLParser(xmlText, includeRoot=false) {
 
         else {
             // logTree(depth, tagName);
-            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs, XML.ATTR_SIGN);
-            hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, start);
 
             if (depth > 0) {
-                hashmap[ depth-1 ].hasTags = true;
+                const topElement = hashmap[ depth-1 ];
+
+                topElement.buf += xmlText.substring(topElement.pos, posStart);
+                topElement.pos = posLast;
+                topElement.hasTags = true;
             }
+
+            dataEntry = xmlUpdateDataEntry(dataEntry, tagName, attrs, XML.ATTR_SIGN);
+            hashmap[ depth ] = xmlCreateHashmapRecord(dataEntry, tagName, posStart, posLast);
 
             depth += 1;
         }
@@ -152,8 +185,17 @@ function xmlUpdateDataEntry(entry, tagName, attrs, prefix='') {
     return attributes;
 }
 
-function xmlCreateHashmapRecord(reference, tagName, start) {
-    return { hasTags: false, reference, tagName, start };
+function xmlCreateHashmapRecord(reference, tagName, posStartTag, posLast) {
+    return {
+        hasAttributes: Object.keys(reference).length ?true :false,
+        hasTags: false,
+        reference,
+        tagName,
+        posStartTag,
+        posStartText: posLast,
+        pos: posLast,
+        buf: ''
+    };
 }
 
 function parseAttributes(text, prefix='') {
