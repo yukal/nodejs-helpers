@@ -1,0 +1,29 @@
+{
+  "name": "nodejs-helpers",
+  "version": "1.0.0",
+  "description": "Node.js helpers",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest ./test/test*.js",
+    "cover": "jest ./test/test*.js -- --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yukal/nodejs-helpers.git"
+  },
+  "keywords": [],
+  "author": "Alexander Yukal <yukal@email.ua>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yukal/nodejs-helpers/issues"
+  },
+  "homepage": "https://github.com/yukal/nodejs-helpers#readme",
+  "jest": {
+    "testRegex": [
+      "test/test.*.js"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^26.2.1"
+  }
+}
