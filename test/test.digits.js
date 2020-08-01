@@ -1,4 +1,4 @@
-const digits = require('../digits');
+const digits = require('../lib/digits');
 
 const valCCARDN16 = '1234567890123456';
 const resCCARDN16 = '1234 5678 9012 3456';
