@@ -19,6 +19,12 @@
   },
   "homepage": "https://github.com/yukal/nodejs-helpers#readme",
   "jest": {
+    "bail": true,
+    "verbose": true,
+    "displayName": {
+      "name": "NODE-HELPERS",
+      "color": "blue"
+    },
     "testRegex": [
       "test/test.*.js"
     ]
