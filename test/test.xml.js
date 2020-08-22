@@ -21,7 +21,7 @@ describe('xml parsing', () => {
         });
 
         test('cleaned up after parsing', () => {
-            expect(check.xml1.data).not.toHaveProperty('*pocket*');
+            expect(check.xml1.data).not.toHaveProperty(XML._POCKET_NAME);
         });
 
         test('header with attributes', () => {
