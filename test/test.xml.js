@@ -16,7 +16,7 @@ before(async () => {
 // ..............................
 // check xml
 
-describe('xml parsing', () => {
+describe('XML Parsing', () => {
   let xml1;
 
   it('parsed XML should be an object', () => {
