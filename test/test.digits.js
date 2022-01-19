@@ -1,3 +1,5 @@
+'use strict';
+
 const digits = require('../lib/digits');
 
 const KILO_BYTE = 1024;

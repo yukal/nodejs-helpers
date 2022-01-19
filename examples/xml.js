@@ -1,3 +1,5 @@
+'use strict';
+
 const root = process.cwd();
 
 const Fs = require('fs');

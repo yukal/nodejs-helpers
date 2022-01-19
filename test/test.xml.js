@@ -1,3 +1,5 @@
+'use strict';
+
 const XML = require('../lib/xml');
 const checkData = {};
 
