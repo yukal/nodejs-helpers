@@ -1,9 +1,9 @@
 const HtmlReader = require('../lib/HtmlReader');
 
 const parseSpecificHtmlPage = (content) => {
-  const parser = HtmlReader.from(content);
+  const reader = HtmlReader.from(content);
 
-  parser
+  reader
     // Find all the tags <table>
     .findAll('table')
 
@@ -47,13 +47,13 @@ const parseSpecificHtmlPage = (content) => {
     .fromPin('data').findOne('#contacts').pin('contacts')
   ;
 
-  const title = parser.getInnerData('title');
-  const info = parser.getInnerData('info');
-  const contacts = parser.getInnerData('contacts');
-  const images = parser.data('images');
+  const title = reader.getInnerData('title');
+  const info = reader.getInnerData('info');
+  const contacts = reader.getInnerData('contacts');
+  const images = reader.data('images');
 
   // Clean up
-  parser.flushResults();
+  reader.flushResults();
 
   return {
     title,
