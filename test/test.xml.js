@@ -1,32 +1,39 @@
-const Fs = require('fs');
 const XML = require('../lib/xml');
-const check = {};
+const checkData = {};
 
-beforeAll(async () => {
-    const dataPath = process.cwd() + '/test/data';
-    check.xml1 = XML.parse(
-        await Fs.promises.readFile(`${dataPath}/1.xml`, 'utf8')
-    );
+before(async () => {
+    const Fs = require('fs');
+    const Path = require('path');
+
+    const PATH_DATA = Path.join(process.cwd(), './test/data');
+    const xmlFilePath = Path.join(PATH_DATA, '1.xml');
+
+    checkData.xmlContent = await Fs.promises.readFile(xmlFilePath, 'utf8');
 });
 
 // ..............................
 // check xml
 
 describe('xml parsing', () => {
-    // const data = XML.parse(check.xml1);
+    let xml1;
+
+    it('parsed XML should be an object', () => {
+        xml1 = XML.parse(checkData.xmlContent);
+        expect(xml1).an('object').not.empty;
+    });
 
     describe('general', () => {
-        test('root element', () => {
-            expect(check.xml1).toHaveProperty('data');
+        it('root element', () => {
+            expect(xml1).property('data');
         });
 
-        test('cleaned up after parsing', () => {
-            expect(check.xml1.data).not.toHaveProperty(XML._POCKET_NAME);
+        it('cleaned up after parsing', () => {
+            expect(xml1.data).not.to.have.property(XML._POCKET_NAME);
         });
 
-        test('header with attributes', () => {
-            expect(check.xml1).toHaveProperty('@version', '1.0');
-            expect(check.xml1).toHaveProperty('@encoding', 'UTF-8');
+        it('header with attributes', () => {
+            expect(xml1).property('@version', '1.0');
+            expect(xml1).property('@encoding', 'UTF-8');
         });
     });
 
@@ -34,24 +41,24 @@ describe('xml parsing', () => {
     // Empties
 
     describe('empties', () => {
-        test('nullable data', () => {
-            expect(check.xml1.data).toHaveProperty('nullable', null);
+        it('nullable data', () => {
+            expect(xml1.data).property('nullable', null);
         });
 
-        test('empty object (single tag)', () => {
-            expect(check.xml1.data).toHaveProperty('empty_object_single', {});
+        it('empty object (single tag)', () => {
+            expect(xml1.data).property('empty_object_single').eql({});
         });
 
-        test('empty object (paired tag)', () => {
-            expect(check.xml1.data).toHaveProperty('empty_object_paired', null);
+        it('empty object (paired tag)', () => {
+            expect(xml1.data).property('empty_object_paired', null);
         });
 
-        test('array with empty items', () => {
-            expect(check.xml1.data).toHaveProperty('empty_items_array', [null, null]);
+        it('array with empty items', () => {
+            expect(xml1.data).property('empty_items_array').eql([null, null]);
         });
 
-        test('array with empty objects', () => {
-            expect(check.xml1.data).toHaveProperty('empty_objects_array', [{}, {}]);
+        it('array with empty objects', () => {
+            expect(xml1.data).property('empty_objects_array').eql([{}, {}]);
         });
     });
 
@@ -59,16 +66,16 @@ describe('xml parsing', () => {
     // Arrays
 
     describe('arrays', () => {
-        test('array with filled items', () => {
-            expect(check.xml1.data).toHaveProperty('array', [
+        it('array with filled items', () => {
+            expect(xml1.data).property('array').eql([
                 "item1",
                 "item2",
                 "item3",
             ]);
         });
 
-        test('array with filled objects', () => {
-            expect(check.xml1.data).toHaveProperty('array_of_objects', [
+        it('array with filled objects', () => {
+            expect(xml1.data).property('array_of_objects').eql([
                 {
                     "attr1": "val",
                     "attr2": "val"
@@ -89,15 +96,15 @@ describe('xml parsing', () => {
     // Objects
 
     describe('objects', () => {
-        test('object with filled attributes', () => {
-            expect(check.xml1.data).toHaveProperty('object', {
+        it('object with filled attributes', () => {
+            expect(xml1.data).property('object').eql({
                 "name": "AGENT_JUPITER",
                 "qmgr": "QM_JUPITER"
             });
         });
 
-        test('object with complex attributes', () => {
-            expect(check.xml1.data).toHaveProperty('object_complex', {
+        it('object with complex attributes', () => {
+            expect(xml1.data).property('object_complex').eql({
                 "array": [
                     {
                         "name": "item1"
@@ -116,8 +123,8 @@ describe('xml parsing', () => {
             });
         });
 
-        test('object with text and array', () => {
-            expect(check.xml1.data).toHaveProperty('object_with_text1', {
+        it('object with text and array', () => {
+            expect(xml1.data).property('object_with_text1').eql({
                 "array": [
                     "item1",
                     "item2",
@@ -128,8 +135,8 @@ describe('xml parsing', () => {
             });
         });
 
-        test('object with text and attributes', () => {
-            expect(check.xml1.data).toHaveProperty('object_with_text2', {
+        it('object with text and attributes', () => {
+            expect(xml1.data).property('object_with_text2').eql({
                 "item1": "item1",
                 "item2": "item2",
                 "item3": "item3",
@@ -143,12 +150,12 @@ describe('xml parsing', () => {
     // Texts
 
     describe('texts', () => {
-        test('text data', () => {
-            expect(check.xml1.data).toHaveProperty('text', 'text data');
+        it('text data', () => {
+            expect(xml1.data).property('text', 'text data');
         });
 
-        test('text with attributes', () => {
-            expect(check.xml1.data).toHaveProperty('text_with_attributes', {
+        it('text with attributes', () => {
+            expect(xml1.data).property('text_with_attributes').eql({
                 "@id": "baf9df73",
                 "@type": "txt",
                 "data": "text data"

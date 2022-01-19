@@ -60,9 +60,11 @@ const checkBytesToFixedSize = [
 // digitsToBytes
 
 describe('digits to bytes', () => {
-    test.each(checkDigits)('"%s" -> "%s" %s', (input, expected) => {
-        const data = digits.digitsToBytes(input);
-        expect(data.toString('hex')).toBe(expected);
+    checkDigits.map(([value, expected, groupName]) => {
+        it(`"${value}" -> "${expected}" ${groupName}`, () => {
+            const data = digits.digitsToBytes(value);
+            expect(data.toString('hex')).equal(expected)
+        });
     });
 });
 
@@ -72,9 +74,10 @@ describe('digits to bytes', () => {
 describe('bytes to digits', () => {
     const checkReversed = checkDigits.map(a => [ a[1], a[0], a[2] ]);
 
-    test.each(checkReversed)('"%s" -> "%s" %s', (input, expected) => {
-        const data = digits.bytesToDigits(Buffer.from(input, 'hex'));
-        expect(data.toString('hex')).toBe(expected);
+    checkReversed.map(([value, expected, groupName]) => {
+        it(`"${value}" -> "${expected}" ${groupName}`, () => {
+            expect(digits.bytesToDigits(Buffer.from(value, 'hex'))).equal(expected);
+        });
     });
 });
 
@@ -82,8 +85,10 @@ describe('bytes to digits', () => {
 // bytesToShortSize
 
 describe('bytes to short size', () => {
-    test.each(checkBytesToShortSize)('%s [%s] = %d', (expected, name, input) => {
-        expect(digits.bytesToShortSize(input)).toBe(expected);
+    checkBytesToShortSize.map(([expected, name, value]) => {
+        it(`1 ${name} = "${expected}"`, () => {
+            expect(digits.bytesToShortSize(value)).equal(expected);
+        });
     });
 });
 
@@ -91,8 +96,10 @@ describe('bytes to short size', () => {
 // bytesToFixedSize
 
 describe('bytes to fixed size', () => {
-    test.each(checkBytesToFixedSize)('%s [%s] = %d', (expected, name, input) => {
-        expect(digits.bytesToFixedSize(input)).toBe(expected);
+    checkBytesToFixedSize.map(([expected, name, value]) => {
+        it(`1 ${name} = "${expected}"`, () => {
+            expect(digits.bytesToFixedSize(value)).equal(expected);
+        });
     });
 });
 
@@ -100,8 +107,8 @@ describe('bytes to fixed size', () => {
 // getCreditCardMaskN16
 
 describe('credit card mask N16', () => {
-    test(`"${valCCARDN16}" -> "${resCCARDN16}"`, () => {
+    it(`"${valCCARDN16}" -> "${resCCARDN16}"`, () => {
         const data = digits.getCreditCardMaskN16(valCCARDN16);
-        expect(data).toBe(resCCARDN16);
+        expect(data).equal(resCCARDN16);
     });
 });
