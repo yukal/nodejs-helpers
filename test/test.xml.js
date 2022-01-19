@@ -133,7 +133,7 @@ describe('xml parsing', () => {
           "item3"
         ],
         "_innerText": "text <array>item1</array> text <array>item2</array> text <array>item3</array> text",
-        "_outerText": "<object_with_text1>\n        text <array>item1</array> text <array>item2</array> text <array>item3</array> text\n    </object_with_text1>"
+        "_outerText": "<object_with_text1>\n    text <array>item1</array> text <array>item2</array> text <array>item3</array> text\n  </object_with_text1>"
       });
     });
 
@@ -143,7 +143,7 @@ describe('xml parsing', () => {
         "item2": "item2",
         "item3": "item3",
         "_innerText": "text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text",
-        "_outerText": "<object_with_text2>\n        text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text\n    </object_with_text2>"
+        "_outerText": "<object_with_text2>\n    text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text\n  </object_with_text2>"
       });
     });
   });
