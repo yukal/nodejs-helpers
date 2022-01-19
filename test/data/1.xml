@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
-    <nullable></nullable>
-    <empty_object_single />
-    <empty_object_paired></empty_object_paired>
-    <empty_items_array></empty_items_array>
-    <empty_items_array></empty_items_array>
-    <empty_objects_array />
-    <empty_objects_array />
+  <nullable></nullable>
+  <empty_object_single />
+  <empty_object_paired></empty_object_paired>
+  <empty_items_array></empty_items_array>
+  <empty_items_array></empty_items_array>
+  <empty_objects_array />
+  <empty_objects_array />
 
-    <array_of_objects attr1="val" attr2="val" />
-    <array_of_objects attr1="val" attr2="val" />
-    <array_of_objects attr1="val" attr2="val" />
+  <array_of_objects attr1="val" attr2="val" />
+  <array_of_objects attr1="val" attr2="val" />
+  <array_of_objects attr1="val" attr2="val" />
 
-    <array>item1</array>
-    <array>item2</array>
+  <array>item1</array>
+  <array>item2</array>
+  <array>item3</array>
+
+  <object name="AGENT_JUPITER" qmgr="QM_JUPITER" />
+  <object_complex>
+    <array name="item1" />
+    <array name="item2">item2</array>
     <array>item3</array>
+    <array>item4</array>
+    <some>some</some>
+    <data some="data" />
+  </object_complex>
 
-    <object name="AGENT_JUPITER" qmgr="QM_JUPITER" />
-    <object_complex>
-        <array name="item1" />
-        <array name="item2">item2</array>
-        <array>item3</array>
-        <array>item4</array>
-        <some>some</some>
-        <data some="data" />
-    </object_complex>
+  <object_with_text1>
+    text <array>item1</array> text <array>item2</array> text <array>item3</array> text
+  </object_with_text1>
 
-    <object_with_text1>
-        text <array>item1</array> text <array>item2</array> text <array>item3</array> text
-    </object_with_text1>
+  <object_with_text2>
+    text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text
+  </object_with_text2>
 
-    <object_with_text2>
-        text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text
-    </object_with_text2>
-
-    <text>text data</text>
-    <text_with_attributes id="baf9df73" type="txt">text data</text_with_attributes>
+  <text>text data</text>
+  <text_with_attributes id="baf9df73" type="txt">text data</text_with_attributes>
 </data>
