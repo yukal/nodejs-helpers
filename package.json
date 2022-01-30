@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/yukal/nodejs-helpers#readme",
   "devDependencies": {
-    "chai": "^4.3.4",
-    "mocha": "^9.1.4"
+    "chai": "^4.3.6",
+    "mocha": "^9.2.0"
   }
 }
