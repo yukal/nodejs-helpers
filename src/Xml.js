@@ -353,7 +353,7 @@ function getType(obj, expectedType) {
   return expectedType !== undefined
     ? shortSignature === expectedType
     : shortSignature
-    ;
+  ;
 }
 
 function logTree() {

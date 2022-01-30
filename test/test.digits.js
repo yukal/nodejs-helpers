@@ -1,6 +1,6 @@
 'use strict';
 
-const Digits = require('../lib/digits');
+const Digits = require('../src/Digits');
 
 describe('Bytes & Digits', () => {
   const dataset = [
