@@ -271,7 +271,7 @@ class HtmlReader {
       return { ...storageData };
     }
 
-    return this._results;
+    return from ? storageData : this._results;
   }
 
   clearMarkers() {
