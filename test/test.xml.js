@@ -1,6 +1,6 @@
 'use strict';
 
-const XML = require('../lib/xml');
+const XML = require('../src/Xml');
 const checkData = {};
 
 before(async () => {

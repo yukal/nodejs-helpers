@@ -2,7 +2,7 @@
 
 // const expect = require('chai').expect;
 
-const HtmlReader = require('../lib/HtmlReader');
+const HtmlReader = require('../src/HtmlReader');
 const checkData = {};
 
 before(async () => {
@@ -147,6 +147,25 @@ describe('Html Reader', () => {
 
   describe('TODO: Object State', () => {
     // TODO: all search cases
+
+    // // _results = ...
+    // parser.findAll("html body table")
+    // // _storage[ mainTable ] = _results
+    //   .pin("mainTable")
+    // // _results = _results[ 1 ]
+    // // _results = _storage[ _lastGivenPin ][ 1 ]
+    //   .item(1);
+
+    // // _lastGivenPin = mainTable
+    // // _results = _storage[ _lastGivenPin ]
+    // parser.fromPin("mainTable")
+    // // _results = _storage[ _lastGivenPin ][ 1 ]
+    //   .item(1)
+    // // _storage[ #id2 ] = _results
+    //   .pin("id2")
+    // // _results = _storage[ _lastGivenPin ][ 1 ]
+    //   .item(1)
+
     it.skip('tests', () => {})
   });
 
