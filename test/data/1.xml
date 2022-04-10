@@ -1,39 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
-  <nullable></nullable>
-  <empty_object_single />
-  <empty_object_paired></empty_object_paired>
-  <empty_items_array></empty_items_array>
-  <empty_items_array></empty_items_array>
-  <empty_objects_array />
-  <empty_objects_array />
+	<empty_string></empty_string>
+	<empty_object />
 
-  <array_of_objects attr1="val" attr2="val" />
-  <array_of_objects attr1="val" attr2="val" />
-  <array_of_objects attr1="val" attr2="val" />
+	<array_with_strings>item1</array_with_strings>
+	<array_with_strings></array_with_strings>
+	<array_with_strings>item2</array_with_strings>
+	<array_with_strings></array_with_strings>
+	<array_with_strings>item3</array_with_strings>
 
-  <array>item1</array>
-  <array>item2</array>
-  <array>item3</array>
+	<array_with_objects attr1="val1" attr2="val2" />
+	<array_with_objects />
+	<array_with_objects attr1="val1" attr2="val2" />
 
-  <object name="AGENT_JUPITER" qmgr="QM_JUPITER" />
-  <object_complex>
-    <array name="item1" />
-    <array name="item2">item2</array>
-    <array>item3</array>
-    <array>item4</array>
-    <some>some</some>
-    <data some="data" />
-  </object_complex>
+	<object name="JUPITER" alias="JPTR" />
 
-  <object_with_text1>
-    text <array>item1</array> text <array>item2</array> text <array>item3</array> text
-  </object_with_text1>
+	<text>text data</text>
+	<text_with_attributes id="baf9df73" type="txt">text data</text_with_attributes>
 
-  <object_with_text2>
-    text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text
-  </object_with_text2>
+	<complex_object>
+		<array name="item1" />
+		<array name="item2">array_item_txt2</array>
+		<array>array_item_txt3</array>
+		<array>array_item_txt4</array>
 
-  <text>text data</text>
-  <text_with_attributes id="baf9df73" type="txt">text data</text_with_attributes>
+		<textualData>text data</textualData>
+		<data attr-key="attr-value" />
+
+		<link href="http://domain.com/rss.xml" rel="self" type="application/rss+xml" />
+		<link href="http://domain.com/bbc.xml" rel="self" type="application/rss+xml">
+			text-1
+			<span>span-1</span>
+			text-2
+			<span>span-2</span>
+			text-3
+			<div>
+				text1
+				<div>text-div</div>
+				text2
+			</div>
+			text-4
+		</link>
+		text1
+		<link>http://domain.com/sect.php?id=9</link>
+		text2
+	</complex_object>
 </data>

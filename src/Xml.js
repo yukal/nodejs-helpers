@@ -5,26 +5,24 @@
  *
  * A simple XML module that implements several methods that are absent in Node.js, 
  * the purpose of which is to convert data from XML text to an object and vice versa.
- * It's useful for the REST/SOAP data exchanges.
  *
  * usage:
+ *   XML(object)
+ *   XML(text)
  *   XML.stringify(xmlObject)
  *   XML.parse(xmlText)
- *   XML.enter(xmlObject, 'data object_complex data')
- *   XML.getAttributes(xmlObject)
+ *   XML.parseAttributes(xmlObject)
+ *   XML.fetchAttributes(xmlObject)
  *
  * @file
  * @ingroup Modules
- * @version 1.5-beta
+ * @version 1.6-beta
  * @license MIT
- * @author Alexander Yukal <yukal@email.ua>
+ * @author Alexander Yukal <yukal.alexander@gmail.com>
  */
 
-const XML = {};
-
 /**
- * XML._ATTR_SIGN
- * A symbol for the paired-tag key-name attribute.
+ * A character for the paired-tag key-name attribute.
  *
  * Example:
  *   <package fruit="banana">
@@ -42,338 +40,296 @@ const XML = {};
  *       }
  *   }
  */
-XML._ATTR_SIGN = '@';
+const XML_ATTR_AT = '@';
+const XML_ATTR_TEXT = '&text';
 
 /**
- * XML._POCKET_NAME
- * The entry name where the temporary data of the search results 
- * should locate in on parsing an XML text.
+ * XML
+ *
+ * @see XML.parse
+ * @see XML.stringify
+ *
+ * @param {string|object} textOrObject A text or object with XML data
+ * @returns A text or object with XML data
  */
-XML._POCKET_NAME = '*POCKET*';
+const XML = (textOrObject) => {
+  const methodName = typeof (textOrObject) === 'string' ? 'parse' : 'stringify';
+  const method = XML[methodName];
+
+  return method.call(XML, textOrObject);
+};
 
 /**
  * XML.parse
  * Parse the XML text and return the result as a data object.
- * 
- * @param {String} xmlText Text with an XML content
- * @param {Object} options [optional] 
- * @returns {Object} Nested object
+ *
+ * @param {string} xmlText 
+ * @returns object
  */
-XML.parse = function parse(xmlText, options = {}) {
-  const template = `<(\/)?([:\\w-_]+)([^>]*?)(\/)?>`;
-  const data = {};
+XML.parse = (xmlText) => {
+  const tree = {};
 
-  data[XML._POCKET_NAME] = {
-    xmlText: xmlText,
-    data: data,
-    datamap: {},
-    lastPosition: 0,
-    depth: 0,
-    posStart: 0,
-    posEnd: 0
-  };
+  let matches = /<\?xml(.*?)\?>/im.exec(xmlText);
+  if (matches !== null) {
+    const [row, params] = matches;
+    const attributes = XML.parseAttributes(params, XML_ATTR_AT);
 
-  const pocket = data[XML._POCKET_NAME];
-  let matches;
+    if (attributes.hasOwnProperty('@encoding')) {
+      attributes['@encoding'] = attributes['@encoding'].toLowerCase();
+    }
 
-  // There may be large text data, so it is better 
-  // to clean the variable for the current closure
-  xmlText = null;
-
-  const showTree = options.hasOwnProperty('showTree')
-    ? options.showTree
-    : false
-  ;
-
-  if (matches = /<\?xml(.*?)\?>/.exec(pocket.xmlText)) {
-    const [matchedText, tagAttributes] = [...matches];
-    pocket.posEnd += matches.index + matchedText.length;
-    pocket.posStart = pocket.posEnd - matchedText.length;
-
-    Object.assign(data, parseAttributes(tagAttributes, XML._ATTR_SIGN));
+    Object.assign(tree, attributes);
+    Object.defineProperty(tree, 'attrsLength', {
+      value: attributes.attrsLength,
+      // writable: true,
+    });
   }
 
-  while (matches = new RegExp(template, 'img').exec(pocket.xmlText.slice(pocket.posEnd))) {
-    const [matchedText, closedTag, tagName, tagAttributes, singleTag] = [...matches];
+  const reg = /<\/?([:\w_-]+)([^>]*)>/m;
+  const options = {
+    matches: reg.exec(xmlText),
+    depth: 0,
+    tree,
+    elements: {},
+    text: '',
+  };
 
-    pocket.posEnd += matches.index + matchedText.length;
-    pocket.posStart = pocket.posEnd - matchedText.length;
+  while (options.matches !== null) {
+    const singleClosed = options.matches[0].endsWith('/>');
+    const pairedClosed = options.matches[0].startsWith('</');
 
-    if (singleTag) {
+    if (singleClosed) {
 
-      parseSingleTag(pocket, tagName, tagAttributes);
-      showTree && logTree(pocket.depth, tagName, singleTag);
+      options.text = '';
+      xmlParseClosedSingleTag(options);
 
-    } else if (closedTag) {
+    } else if (pairedClosed) {
 
-      parseClosedTag(pocket);
-      showTree && logTree(pocket.depth, tagName, closedTag);
+      options.text = xmlText.slice(0, options.matches.index).trim();
+      xmlParseClosedPairedTag(options);
 
     } else {
 
-      showTree && logTree(pocket.depth, tagName);
-      parseOpenedTag(pocket, tagName, tagAttributes);
+      options.text = xmlText.slice(0, options.matches.index).trim();
+      xmlParseOpenedPairedTag(options);
 
     }
+
+    xmlText = xmlText.slice(options.matches.index + options.matches[0].length);
+    options.matches = reg.exec(xmlText);
   }
 
-  delete data[XML._POCKET_NAME];
-  return data;
-}
+  return tree;
+};
 
-XML.stringify = function stringify(xmlData, indent = 4, version = '1.0', encoding = 'UTF-8') {
-  throw new Error('Method XML.stringify() not implemented yet');
-}
+XML.stringify = (xml) => {
+  throw new Error('xml.stringify() not implemented yet');
+};
 
-/**
- * getAttributes
- * Returns an object with attributes that begins with "@" char
- * @param {object} obj Object
- * @returns {object} Object with attributes or empty object
- */
-XML.getAttributes = function getAttributes(obj) {
+XML.parseAttributes = (params, prefix = '') => {
+  const reg = /(?<key>[:\w_-]+)=["'](?<val>[^"']+)['"]/;
+  const attributes = {};
+  let matches = reg.exec(params);
+  let length = 0;
+
+  while (matches !== null) {
+    const [row, key, val] = matches;
+    const attrKey = prefix + key.toLowerCase();
+
+    params = params.slice(matches.index + row.length);
+    matches = reg.exec(params);
+
+    attributes[attrKey] = val;
+    length++;
+  }
+
+  return Object.defineProperty(attributes, 'attrsLength', {
+    value: length,
+    // writable: true
+  });
+};
+
+XML.fetchAttributes = (object) => {
   const attributes = {};
 
-  for (const key in obj) {
-    if (key[0] === '@') {
-      attributes[key.slice(1)] = obj[key];
+  for (const keyName in object) {
+    if (keyName.startsWith(XML_ATTR_AT)) {
+      const key = keyName.slice(XML_ATTR_AT.length);
+      attributes[key] = object[keyName];
     }
   }
 
   return attributes;
-}
+};
 
-/**
- * enter
- * Enters inside a nested path and returns the data inside the object.
- * It does not work with arrays
- * @param {object} obj Object with nested nodes
- * @param {string|array} path Path to a nested node (path="some node path" | path=["some", "node", "path"])
- * @param {string} keyPrefix [optional]
- * @returns {object|null}
- */
-XML.enter = function enter(obj, path, keyPrefix = '') {
-  if (!Array.isArray(path)) {
-    path = path.split(' ');
-  }
+const xmlParseClosedSingleTag = (options) => {
+  const { depth, tree } = options;
+  const [row, tagName, params] = options.matches;
 
-  let data = obj;
-  let key;
+  const currItem = options.elements[depth];
+  const attributes = XML.parseAttributes(params);
 
-  while (key = path.shift()) {
-    key = `${keyPrefix}${key}`;
+  currItem.hasTags = true;
 
-    if (data.hasOwnProperty(key)) {
-      data = data[key];
+  if (currItem.data.hasOwnProperty(tagName)) {
+    if (Array.isArray(currItem.data[tagName])) {
+
+      currItem.data[tagName].push(attributes);
+
     } else {
-      return null;
+
+      currItem.data[tagName] = [
+        currItem.data[tagName],
+        attributes
+      ];
+
     }
-  }
-
-  return data;
-}
-
-function parseSingleTag(pocket, tagName, tagAttributes) {
-  const attributes = parseAttributes(tagAttributes);
-
-  if (pocket.data.hasOwnProperty(tagName)) {
-    const existNode = pocket.data[tagName];
-
-    if (Array.isArray(existNode)) {
-      existNode.push(attributes);
-    } else {
-      pocket.data[tagName] = [existNode, attributes];
-    }
-
   } else {
-    pocket.data[tagName] = attributes;
+
+    currItem.data[tagName] = attributes;
+
   }
 
-  // Update parent node
-  if (pocket.depth > 0) {
-    const parentNode = pocket.datamap[pocket.depth - 1];
-    parentNode.outsideText += pocket.xmlText.substring(parentNode.lastPosition, pocket.posStart);
-    parentNode.lastPosition = pocket.posEnd;
-    parentNode.hasTags = true;
-  }
-}
+  // if (options.debug) {
+  //   logTree(depth, tagName, params);
+  // }
+};
 
-function parseOpenedTag(pocket, tagName, tagAttributes) {
-  const { attributes, hasAttributes } = parseAttributes(tagAttributes, XML._ATTR_SIGN, true);
+const xmlParseClosedPairedTag = (options) => {
+  const [row, tagName, params] = options.matches;
+  const { elements, depth, text } = options;
 
-  if (pocket.depth > 0) {
-    // Update parent node
-    const parentNode = pocket.datamap[pocket.depth - 1];
-    parentNode.outsideText += pocket.xmlText.substring(parentNode.lastPosition, pocket.posStart);
-    parentNode.lastPosition = pocket.posStart;
-    parentNode.hasTags = true;
-  }
+  const prevItem = elements[depth - 1];
+  const currItem = elements[depth];
 
-  if (pocket.data.hasOwnProperty(tagName)) {
-    const existNode = pocket.data[tagName];
+  if (!currItem.hasTags) {
+    const isCurrItemAnArray = Array.isArray(prevItem.data[currItem.tagName]);
 
-    if (Array.isArray(existNode)) {
-      hasAttributes
-        ? existNode.push(attributes)
-        : existNode.push(null)
-      ;
-    }
-    else {
-      pocket.data[tagName] = getType(existNode, 'object') && isEmptyObject(existNode)
-        ? [null, attributes]
-        : [existNode, attributes]
-      ;
-    }
+    if (isCurrItemAnArray) {
 
-  } else {
-    pocket.data[tagName] = attributes;
-  }
+      const array = prevItem.data[currItem.tagName];
+      const lastIndex = array.length - 1;
+      const lastItem = array[lastIndex];
 
-  pocket.data = pocket.data[tagName];
-  pocket.datamap[pocket.depth] = {
-    hasAttributes,
-    hasTags: false,
-    data: attributes,
-    tagName,
-    posStartTag: pocket.posStart,
-    posStartText: pocket.posEnd,
-    lastPosition: pocket.posEnd,
-    outsideText: ''
-  }
+      if (lastItem.attrsLength === 0) {
 
-  pocket.depth += 1;
-}
+        // save text as string
+        array[lastIndex] = text;
 
-function parseClosedTag(pocket) {
-  pocket.depth -= 1;
+      } else {
 
-  if (pocket.depth > 0) {
-    const parentNode = pocket.datamap[pocket.depth - 1];
-    const currentNode = pocket.datamap[pocket.depth];
+        // save text as object
+        lastItem[XML_ATTR_TEXT] = text;
 
-    // Is the current nested list node ending
-    if (currentNode.posStartTag === parentNode.lastPosition) {
-      currentNode.outsideText += pocket.xmlText.substring(currentNode.lastPosition, pocket.posStart);
-
-      // Is any non-space char present inside the current node
-      // excluding the inner tags (outside of the inner tags)
-      if (/\S/.test(currentNode.outsideText) && currentNode.hasTags) {
-        currentNode.data._innerText = pocket.xmlText.substring(currentNode.posStartText, pocket.posStart).trim();
-        currentNode.data._outerText = pocket.xmlText.substring(currentNode.posStartTag, pocket.posEnd).trim();
       }
+    } else if (currItem.data.attrsLength) {
+
+      currItem.data[XML_ATTR_TEXT] = text;
+
+    } else {
+
+      prevItem.data[currItem.tagName] = text;
+
     }
 
-    if (!currentNode.hasTags) {
-      const currData = parentNode.data[currentNode.tagName];
-      const innerText = pocket.xmlText.substring(currentNode.lastPosition, pocket.posStart);
-      // const outerText = pocket.xmlText.substring(currentNode.posStartTag, posLast);
+  } else {
+    if (text.length) {
+      if (currItem.data.hasOwnProperty(XML_ATTR_TEXT)) {
+        if (Array.isArray(currItem.data[XML_ATTR_TEXT])) {
 
-      if (!currentNode.hasAttributes) {
-        // Update last item of array
-        if (Array.isArray(currData)) {
-          // Array data
-          // <array>item1</array>
-          // <array>item2</array>
-          // <array></array>
-          // converts to: 
-          //   { "array": ["item1", "item2", null] }
-          currData[currData.length - 1] = innerText.length ? innerText : null;
-        }
+          currItem.data[XML_ATTR_TEXT].push(text);
 
-        // Update as a primitive property
-        else if (innerText.length > 0) {
-          // Textual data
-          // <textual>hello world!</textual>
-          // converts (as is) to: 
-          //   { "textual": "hello world!" }
-          parentNode.data[currentNode.tagName] = innerText;
-        }
+        } else {
 
-        else if (getType(currData, 'object')) {
-          // Nullable data
-          // <somedata></somedata>
-          // converts to: 
-          //   { "somedata": null }
-          parentNode.data[currentNode.tagName] = null;
+          currItem.data[XML_ATTR_TEXT] = [item, text];
+
         }
       } else {
-        // Paired tag with text and attributes
-        // <text_data attribute="1">text data</text_data>
-        // converts to:
-        //   "text_data": {
-        //     "@attribute": "1"
-        //     "data": "text data"
-        //   }
-        currentNode.data.data = innerText;
+
+        currItem.data[XML_ATTR_TEXT] = text;
+
+      }
+    }
+  }
+
+  // if (options.debug) {
+  //   logTree(options.depth, tagName, params);
+  // }
+
+  delete elements[depth];
+  options.depth--;
+};
+
+const xmlParseOpenedPairedTag = (options) => {
+  options.depth++;
+
+  const { depth, tree, elements } = options;
+  const [row, tagName, params] = options.matches;
+  const attributes = XML.parseAttributes(params, XML_ATTR_AT);
+
+  if (depth === 1) {
+
+    tree[tagName] = attributes;
+
+  } else {
+
+    // const currEntry = { [tagName]: XML.parseAttributes(params, XML_ATTR_AT) };
+    const prev = elements[depth - 1];
+    prev.hasTags = true;
+
+    if (options.text.length) {
+      if (!prev.data.hasOwnProperty(XML_ATTR_TEXT)) {
+
+        prev.data[XML_ATTR_TEXT] = [options.text];
+
+      } else {
+
+        prev.data[XML_ATTR_TEXT].push(options.text);
+
       }
     }
 
-    // Update parent node
-    parentNode.lastPosition = pocket.posEnd;
+    if (!prev.data.hasOwnProperty(tagName)) {
 
-    // Back to a parent node
-    pocket.data = parentNode.data;
+      prev.data[tagName] = attributes;
+
+    } else {
+      if (Array.isArray(prev.data[tagName])) {
+
+        prev.data[tagName].push(attributes);
+
+      } else {
+
+        prev.data[tagName] = [
+          prev.data[tagName],
+          attributes,
+        ];
+
+      }
+    }
+
   }
 
-  // There will be no more data in the current node,
-  // so, we need to clean the datamap with this node
-  delete pocket.datamap[pocket.depth];
-}
-
-function parseAttributes(text, prefix = '', asBundle = false) {
-  const bundle = {
-    hasAttributes: false,
-    attributes: {}
+  elements[depth] = {
+    tagName,
+    data: attributes,
+    hasTags: false
   };
-  let last = 0;
-  let matches;
 
-  while (matches = /([:\w]+)\s*=\s*["'](.*?)['"]/img.exec(text.substr(last))) {
-    let [matchedText, propertyName, value] = [...matches];
-    propertyName = prefix + propertyName;
-    last += matches.index + matchedText.length;
-    bundle.hasAttributes = true;
-    bundle.attributes[propertyName] = value;
-  }
+  // if (options.debug) {
+  //   logTree(depth, tagName, params);
+  // }
+};
 
-  return asBundle ? bundle : bundle.attributes;
-}
+const getIndent = (cnt) => cnt > 0 ? ' '.repeat(cnt * 2) : '';
+const logTree = (depth, tagName, params) => {
+  const indent = getIndent(depth);
 
-function isEmptyObject(obj) {
-  for (const item in obj) {
-    return false;
-  }
-  return true;
-}
+  const args = depth > 0
+    ? [indent, depth, tagName, params.trim()]
+    : [depth, tagName, params.trim()];
 
-function getType(obj, expectedType) {
-  const fullSignature = Object.prototype.toString.call(obj);
-  const shortSignature = fullSignature.slice(8, -1).toLowerCase();
-
-  return expectedType !== undefined
-    ? shortSignature === expectedType
-    : shortSignature
-  ;
-}
-
-function logTree() {
-  const args = [...arguments];
-  const depth = args.shift();
-  let color = depth;
-
-  if (color < 1) {
-    color = 1;
-  }
-
-  if (color > 14) {
-    color %= 14;
-  }
-
-  const values = ' %s'.repeat(args.length);
-  const template = `\x1B[38;05;${color}m%s %s${values}\x1B[0m`;
-  const indent = ' '.repeat(depth * 4);
-
-  console.log.apply(console, [template, depth, indent].concat(args));
-}
+  console.log(...args);
+};
 
 module.exports = XML;
