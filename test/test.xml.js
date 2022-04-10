@@ -16,153 +16,108 @@ before(async () => {
 // ..............................
 // check xml
 
-describe('XML Parsing', () => {
-  let xml1;
+describe('XML', () => {
+  let xml;
 
-  it('parsed XML should be an object', () => {
-    xml1 = XML.parse(checkData.xmlContent);
-    expect(xml1).an('object').not.empty;
-  });
-
-  describe('general', () => {
-    it('root element', () => {
-      expect(xml1).property('data');
+  describe('parsing', () => {
+    it('parsed XML should be a filled object', () => {
+      xml = XML(checkData.xmlContent);
+      expect(xml).an('object').not.empty;
     });
 
-    it('cleaned up after parsing', () => {
-      expect(xml1.data).not.to.have.property(XML._POCKET_NAME);
+    it('xml attributes', () => {
+      expect(xml).property('@version', '1.0');
+      expect(xml).property('@encoding', 'utf-8');
     });
 
-    it('header with attributes', () => {
-      expect(xml1).property('@version', '1.0');
-      expect(xml1).property('@encoding', 'UTF-8');
-    });
-  });
+    it('inner items', () => {
+      expect(xml).property('data');
+      expect(xml.data).property('empty_string', '');
+      expect(xml.data).property('empty_object').eql({});
 
-  // ..............
-  // Empties
-
-  describe('empties', () => {
-    it('nullable data', () => {
-      expect(xml1.data).property('nullable', null);
-    });
-
-    it('empty object (single tag)', () => {
-      expect(xml1.data).property('empty_object_single').eql({});
-    });
-
-    it('empty object (paired tag)', () => {
-      expect(xml1.data).property('empty_object_paired', null);
-    });
-
-    it('array with empty items', () => {
-      expect(xml1.data).property('empty_items_array').eql([null, null]);
-    });
-
-    it('array with empty objects', () => {
-      expect(xml1.data).property('empty_objects_array').eql([{}, {}]);
-    });
-  });
-
-  // ..............
-  // Arrays
-
-  describe('arrays', () => {
-    it('array with filled items', () => {
-      expect(xml1.data).property('array').eql([
-        "item1",
-        "item2",
-        "item3",
+      expect(xml.data.array_with_strings).eql([
+        'item1',
+        '',
+        'item2',
+        '',
+        'item3'
       ]);
-    });
 
-    it('array with filled objects', () => {
-      expect(xml1.data).property('array_of_objects').eql([
-        {
-          "attr1": "val",
-          "attr2": "val"
-        },
-        {
-          "attr1": "val",
-          "attr2": "val"
-        },
-        {
-          "attr1": "val",
-          "attr2": "val"
-        }
-      ]);
-    });
-  });
+      expect(xml.data).property('empty_object');
+      expect(xml.data.empty_object)
+        .an('object')
+        .empty;
 
-  // ..............
-  // Objects
+      expect(xml.data.array_with_objects).eql([{
+        'attr1': 'val1',
+        'attr2': 'val2',
+      },
+      {},
+      {
+        'attr1': 'val1',
+        'attr2': 'val2',
+      }]);
+      expect(xml.data.array_with_objects[0]).property('attrsLength', 2);
+      expect(xml.data.array_with_objects[1]).property('attrsLength', 0);
+      expect(xml.data.array_with_objects[2]).property('attrsLength', 2);
 
-  describe('objects', () => {
-    it('object with filled attributes', () => {
-      expect(xml1.data).property('object').eql({
-        "name": "AGENT_JUPITER",
-        "qmgr": "QM_JUPITER"
+      expect(xml.data).property('text', 'text data');
+
+      expect(xml.data).property('text_with_attributes');
+      expect(xml.data.text_with_attributes).eql({
+        '@id': 'baf9df73',
+        '@type': 'txt',
+        '&text': 'text data',
       });
-    });
 
-    it('object with complex attributes', () => {
-      expect(xml1.data).property('object_complex').eql({
-        "array": [
+      expect(xml.data).property('complex_object');
+      expect(xml.data.complex_object).eql({
+        array: [
+          { 'name': 'item1' },
+          { '@name': 'item2', '&text': 'array_item_txt2' },
+          'array_item_txt3',
+          'array_item_txt4',
+        ],
+        textualData: 'text data',
+        data: { 'attr-key': 'attr-value' },
+        link: [
           {
-            "name": "item1"
+            'href': 'http://domain.com/rss.xml',
+            'rel': 'self',
+            'type': 'application/rss+xml'
           },
           {
-            "@name": "item2",
-            "data": "item2"
+            '@href': 'http://domain.com/bbc.xml',
+            '@rel': 'self',
+            '@type': 'application/rss+xml',
+            '&text': [
+              'text-1',
+              'text-2',
+              'text-3',
+              'text-4',
+            ],
+            span: [
+              'span-1',
+              'span-2',
+            ],
+            div: {
+              '&text': [
+                'text1',
+                'text2',
+              ],
+              div: 'text-div',
+            }
           },
-          "item3",
-          "item4"
+          'http://domain.com/sect.php?id=9'
         ],
-        "some": "some",
-        "data": {
-          "some": "data"
-        }
+        '&text': ['text1', 'text2']
       });
-    });
 
-    it('object with text and array', () => {
-      expect(xml1.data).property('object_with_text1').eql({
-        "array": [
-          "item1",
-          "item2",
-          "item3"
-        ],
-        "_innerText": "text <array>item1</array> text <array>item2</array> text <array>item3</array> text",
-        "_outerText": "<object_with_text1>\n    text <array>item1</array> text <array>item2</array> text <array>item3</array> text\n  </object_with_text1>"
-      });
-    });
-
-    it('object with text and attributes', () => {
-      expect(xml1.data).property('object_with_text2').eql({
-        "item1": "item1",
-        "item2": "item2",
-        "item3": "item3",
-        "_innerText": "text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text",
-        "_outerText": "<object_with_text2>\n    text <item1>item1</item1> text <item2>item2</item2> text <item3>item3</item3> text\n  </object_with_text2>"
-      });
     });
   });
 
-  // ..............
-  // Texts
-
-  describe('texts', () => {
-    it('text data', () => {
-      expect(xml1.data).property('text', 'text data');
-    });
-
-    it('text with attributes', () => {
-      expect(xml1.data).property('text_with_attributes').eql({
-        "@id": "baf9df73",
-        "@type": "txt",
-        "data": "text data"
-      });
-    });
+  describe('serialize', () => {
+    it.skip('TODO: check object to XML text conversion', () => { });
   });
 
 });
