@@ -116,8 +116,112 @@ describe('XML', () => {
     });
   });
 
-  describe('serialize', () => {
-    it.skip('TODO: check object to XML text conversion', () => { });
+  describe('stringify', () => {
+    it('empty xml', () => {
+      const text = XML.stringify();
+      expect(text).eq('');
+    });
+
+    it('empty xml with default params', () => {
+      const text = XML.stringify({});
+      expect(text).eq('<?xml version="1.0" encoding="UTF-8"?>');
+    });
+
+    it('empty xml with specific params', () => {
+      const text = XML.stringify({}, {
+        version: '2.0',
+        encoding: 'cp1251',
+      });
+
+      expect(text).eq('<?xml version="2.0" encoding="cp1251"?>');
+    });
+
+    it('empty string', () => {
+      const text = XML.stringifyBody({ data: '' });
+      expect(text).eq('\n<data></data>');
+    });
+
+    it('empty object', () => {
+      const text = XML.stringifyBody({ data: {} });
+      expect(text).eq('\n<data />');
+    });
+
+    it('array with strings', () => {
+      const data = ['item1', 'item2', 'item3'];
+      const expectingRows = [
+        '<data>item1</data>',
+        '<data>item2</data>',
+        '<data>item3</data>'
+      ];
+
+      const text = XML.stringifyBody({ data });
+      const result = expectingRows.join('\n');
+
+      expect(text).eq(`\n${result}`);
+    });
+
+    it('array with objects', () => {
+      const data = [
+        {
+          '@attr1': 'val1',
+          '@attr2': 'val2',
+        },
+        {},
+        {
+          tag1: 'val1',
+          tag2: 'val2',
+        }
+      ];
+
+      const expectingRows = [
+        '<data attr1="val1" attr2="val2" />',
+        '<data />',
+        '<data>',
+        '  <tag1>val1</tag1>',
+        '  <tag2>val2</tag2>',
+        '</data>',
+      ];
+
+      const text = XML.stringifyBody({ data });
+      const result = expectingRows.join('\n');
+
+      expect(text).eq(`\n${result}`);
+    });
+
+    it('object with attributes', () => {
+      const data = {
+        '@name': 'JUPITER',
+        '@alias': 'JPTR',
+      };
+
+      const text = XML.stringifyBody({ data });
+      expect(text).eq(`\n<data name="JUPITER" alias="JPTR" />`);
+    });
+
+    it('text', () => {
+      const data = 'text data';
+      const text = XML.stringifyBody({ data });
+      expect(text).eq(`\n<data>text data</data>`);
+    });
+
+    it('text with attributes', () => {
+      const data = {
+        '@id': 'baf9df73',
+        '@type': 'txt',
+        '&text': 'text data',
+      };
+
+      const expectingRows = [
+        '<data id="baf9df73" type="txt">',
+        '  text data',
+        '</data>',
+      ];
+
+      const text = XML.stringifyBody({ data });
+      const result = expectingRows.join('\n');
+
+      expect(text).eq(`\n${result}`);
+    });
   });
 
 });
