@@ -8,16 +8,6 @@ import fs from 'fs/promises';
 
 import HtmlReader from '../src/HtmlReader/index.js';
 
-before(async () => {
-  const Fs = require('fs');
-  const Path = require('path');
-
-  const PATH_DATA = Path.join(process.cwd(), './test/data');
-  const htmlFilePath = Path.join(PATH_DATA, '1.html');
-
-  checkData.htmlContent = await Fs.promises.readFile(htmlFilePath, 'utf8');
-});
-
 // ..............................
 // Check HtmlReader
 
@@ -28,7 +18,7 @@ describe('Html Reader', () => {
     var stubFile = path.join(process.cwd(), './test/data/1.html');
     var content = await fs.readFile(stubFile, 'utf8');
 
-    parser = HtmlReader.from(checkData.htmlContent);
+    parser = HtmlReader.from(content);
   });
 
   afterEach(() => {
@@ -37,44 +27,39 @@ describe('Html Reader', () => {
 
   it('initial state', () => {
     // Instance
-    expect(parser).instanceOf(HtmlReader);
+    assert.ok(parser instanceof HtmlReader);
 
     // Variables
-    expect(parser).property('_storage').eql({});
-    expect(parser).property('_results', null);
-    expect(parser).property('_lastSavedPin', '');
-    expect(parser).property('_lastGivenPin', '');
-    expect(parser).property('_lastGivenItem', -1);
+    assert.deepEqual(parser._storage, {});
+    assert.strictEqual(parser._results, null);
+    assert.strictEqual(parser._lastSavedPin, '');
+    assert.strictEqual(parser._lastGivenPin, '');
+    assert.strictEqual(parser._lastGivenItem, -1);
 
     // Methods (required)
-    expect(parser).property('findOne').instanceOf(Function);
-    expect(parser).property('findAll').instanceOf(Function);
-    expect(parser).property('getInnerData').instanceOf(Function);
-    expect(parser).property('getOuterData').instanceOf(Function);
-    expect(parser).property('pin').instanceOf(Function);
-    expect(parser).property('pinItems').instanceOf(Function);
-    expect(parser).property('fromPin').instanceOf(Function);
-    expect(parser).property('unpin').instanceOf(Function);
-    expect(parser).property('item').instanceOf(Function);
-    expect(parser).property('data').instanceOf(Function);
-    expect(parser).property('flushResults').instanceOf(Function);
+    assert.ok(parser.findOne instanceof Function);
+    assert.ok(parser.findAll instanceof Function);
+    assert.ok(parser.getInnerData instanceof Function);
+    assert.ok(parser.getOuterData instanceof Function);
+    assert.ok(parser.pin instanceof Function);
+    assert.ok(parser.pinItems instanceof Function);
+    assert.ok(parser.fromPin instanceof Function);
+    assert.ok(parser.unpin instanceof Function);
+    assert.ok(parser.item instanceof Function);
+    assert.ok(parser.data instanceof Function);
+    assert.ok(parser.flushResults instanceof Function);
   });
 
   describe('Interface', () => {
     it('flushResults()', () => {
-      this._storage = undefined;
-      this._results = undefined;
-      this._lastSavedPin = undefined;
-      this._lastGivenPin = undefined;
-      this._lastGivenItem = undefined;
 
       parser.flushResults();
 
-      expect(parser).property('_storage').eql({});
-      expect(parser).property('_results', null);
-      expect(parser).property('_lastSavedPin', '');
-      expect(parser).property('_lastGivenPin', '');
-      expect(parser).property('_lastGivenItem', -1);
+      assert.deepEqual(parser._storage, {});
+      assert.strictEqual(parser._results, null);
+      assert.strictEqual(parser._lastSavedPin, '');
+      assert.strictEqual(parser._lastGivenPin, '');
+      assert.strictEqual(parser._lastGivenItem, -1);
     });
 
     it('findOne()', () => {
@@ -82,24 +67,25 @@ describe('Html Reader', () => {
 
       var { attributes, coords } = parser._results;
 
-      expect(attributes).property('item', '1');
-      expect(coords).an('array').lengthOf(4);
+      assert.strictEqual(attributes.item, '1');
+      assert.strictEqual(coords.length, 4);
     });
 
     it('findAll()', () => {
       parser.findAll('tr');
-      expect(parser._results).an('array');
-      expect(parser._results.length).greaterThan(0);
+
+      assert.ok(Array.isArray(parser._results));
+      assert.ok(parser._results.length > 0);
     });
 
     it('getInnerData()', () => {
       var data = parser.findOne('td').getInnerData();
-      expect(data).equal('text1');
+      assert.strictEqual(data, 'text1');
     });
 
     it('getOuterData()', () => {
       var data = parser.findOne('td').getOuterData();
-      expect(data).equal('<td data-item="1">text1</td>');
+      assert.strictEqual(data, '<td data-item="1">text1</td>');
     });
 
     it('pin()', () => {
@@ -107,26 +93,30 @@ describe('Html Reader', () => {
 
       var { attributes, coords } = parser._storage.td;
 
-      expect(attributes).property('item', '1');
-      expect(coords).an('array').lengthOf(4);
-      expect(parser._lastSavedPin).equal('td');
+      assert.strictEqual(attributes.item, '1');
+      assert.ok(Array.isArray(coords));
+      assert.strictEqual(coords.length, 4);
+      assert.strictEqual(parser._lastSavedPin, 'td');
     });
 
     it('pinItems()', () => {
       parser.findAll('tr').pinItems('rows', [1, 2]);
-      expect(parser._storage).property('rows').lengthOf(2);
-      expect(parser._lastSavedPin).equal('rows');
+
+      assert.ok(Array.isArray(parser._storage.rows));
+      assert.strictEqual(parser._storage.rows.length, 2);
+      assert.strictEqual(parser._lastSavedPin, 'rows');
     });
 
     it('fromPin()', () => {
       parser.findOne('td').pin('td').fromPin('td');
-      expect(parser._lastSavedPin).equal('td');
-      expect(parser._lastGivenPin).equal('td');
+
+      assert.strictEqual(parser._lastSavedPin, 'td');
+      assert.strictEqual(parser._lastGivenPin, 'td');
     });
 
     it('unpin()', () => {
       parser.findAll('tr').pinItems('rows', [1, 2]).unpin('rows');
-      expect(parser._storage).not.have.property('rows');
+      assert.ok(!parser._storage.hasOwnProperty('rows'));
     });
 
     it('item()', () => {
@@ -134,9 +124,10 @@ describe('Html Reader', () => {
 
       var { attributes, coords } = parser._results;
 
-      expect(attributes).property('class', 'row');
-      expect(coords).an('array').lengthOf(4);
-      expect(parser._lastGivenItem).equal(0);
+      assert.strictEqual(attributes.class, 'row');
+      assert.ok(Array.isArray(coords));
+      assert.strictEqual(coords.length, 4);
+      assert.strictEqual(parser._lastGivenItem, 0);
     });
 
     it('data()', () => {
@@ -145,8 +136,9 @@ describe('Html Reader', () => {
       var data = parser.data();
       var expectedLength = parser._results.length;
 
-      expect(data).an('array').lengthOf(expectedLength);
-      expect(data[0]).an('object').property('class', 'row');
+      assert.ok(Array.isArray(data));
+      assert.strictEqual(data.length, expectedLength);
+      assert.strictEqual(data[0].class, 'row');
     });
   });
 

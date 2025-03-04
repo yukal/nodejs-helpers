@@ -34,7 +34,7 @@ describe('Bytes & Digits', () => {
     dataset.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
         var data = digitsToBytes(value);
-        expect(data.toString('hex')).equal(expected)
+        assert.strictEqual(data.toString('hex'), expected);
       });
     });
   });
@@ -44,7 +44,7 @@ describe('Bytes & Digits', () => {
 
     checkReversed.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
-        expect(Digits.bytesToDigits(Buffer.from(value, 'hex'))).equal(expected);
+        assert.strictEqual(bytesToDigits(Buffer.from(value, 'hex')), expected);
       });
     });
   });
@@ -77,7 +77,7 @@ describe('Bytes & Size', () => {
 
     checkBytesToShortSize.map(([expected, name, value]) => {
       it(`1 ${name} = "${expected}"`, () => {
-        expect(Digits.bytesToShortSize(value)).equal(expected);
+        assert.strictEqual(bytesToShortSize(value), expected);
       });
     });
   });
@@ -98,7 +98,7 @@ describe('Bytes & Size', () => {
 
     checkBytesToFixedSize.map(([expected, name, value]) => {
       it(`1 ${name} = "${expected}"`, () => {
-        expect(Digits.bytesToFixedSize(value)).equal(expected);
+        assert.strictEqual(bytesToFixedSize(value), expected);
       });
     });
   });
@@ -111,7 +111,7 @@ describe('Credit Card', () => {
 
     it(`"${value}" -> "${expected}"`, () => {
       var data = getCreditCardMaskN16(value);
-      expect(data).equal(expected);
+      assert.strictEqual(data, expected);
     });
   });
 });
