@@ -2,6 +2,7 @@
   "name": "nodejs-helpers",
   "version": "1.3.1",
   "description": "Node.js helpers",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-config --no-package -r .test.js ./test/**/test*.js"
@@ -17,8 +18,5 @@
     "url": "https://github.com/yukal/nodejs-helpers/issues"
   },
   "homepage": "https://github.com/yukal/nodejs-helpers#readme",
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^9.2.0"
-  }
+  "devDependencies": {}
 }

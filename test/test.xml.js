@@ -1,7 +1,12 @@
 'use strict';
 
-const XML = require('../src/Xml');
-const checkData = {};
+import assert from 'node:assert';
+import { describe, it, before } from 'node:test';
+
+import path from 'path';
+import fs from 'fs/promises';
+
+import XML from '../src/Xml.js';
 
 before(async () => {
   const Fs = require('fs');

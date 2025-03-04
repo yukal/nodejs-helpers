@@ -1,9 +1,12 @@
 'use strict';
 
-// const expect = require('chai').expect;
+import assert from 'node:assert';
+import { describe, it, before, afterEach } from 'node:test';
 
-const HtmlReader = require('../src/HtmlReader');
-const checkData = {};
+import path from 'path';
+import fs from 'fs/promises';
+
+import HtmlReader from '../src/HtmlReader/index.js';
 
 before(async () => {
   const Fs = require('fs');

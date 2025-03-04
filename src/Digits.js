@@ -153,7 +153,7 @@ function bytesToFixedSize(size, fixed = 1, measure = 1024, markers = 'bKMGTPEZYB
   ;
 }
 
-module.exports = {
+export {
   getCreditCardMaskN16,
   digitsToBytes,
   bytesToDigits,

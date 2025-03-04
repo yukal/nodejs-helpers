@@ -546,4 +546,4 @@ const Type = (obj) => {
   return signature.slice(8, -1).toLowerCase();
 }
 
-module.exports = Object.freeze(XML);
+export default Object.freeze(XML);

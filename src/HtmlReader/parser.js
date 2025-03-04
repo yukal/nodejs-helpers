@@ -1,7 +1,7 @@
 'use strict';
 
-const Tag = require('./Tag');
-const Type = require('./Type');
+import Tag from './Tag.js';
+import Type from './Type.js';
 
 const parseSelectorParams = (target) => {
   const matches = target.match(/^\w+|[\#\w\_\-]+|[\.\w\_\-]+|\[.*?\]/gi);
@@ -228,4 +228,4 @@ const search = (selector, html, coords, firstMatch = false) => {
   return firstMatch ? null : tags;
 }
 
-module.exports = search;
+export default search;

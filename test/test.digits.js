@@ -1,6 +1,15 @@
 'use strict';
 
-const Digits = require('../src/Digits');
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
+import {
+  bytesToDigits,
+  bytesToFixedSize,
+  bytesToShortSize,
+  digitsToBytes,
+  getCreditCardMaskN16,
+} from '../src/Digits.js';
 
 describe('Bytes & Digits', () => {
   const dataset = [

@@ -10,9 +10,9 @@
  * @author Alexander Yukal <yukal@email.ua>
  */
 
-const Tag = require('./Tag');
-const Type = require('./Type');
-const search = require('./parser');
+import Tag from './Tag.js';
+import Type from './Type.js';
+import search from './parser.js';
 
 const getItem = (ctx, index = -1) => {
   const storageEntry = ctx._lastGivenPin
@@ -297,4 +297,4 @@ class HtmlReader {
   }
 }
 
-module.exports = HtmlReader;
+export default HtmlReader;

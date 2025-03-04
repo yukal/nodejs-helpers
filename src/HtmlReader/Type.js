@@ -8,4 +8,4 @@ const Type = (obj) => {
 Type.isObject = (data) => Type(data) === 'object';
 Type.isString = (data) => Type(data) === 'string';
 
-module.exports = Type;
+export default Type;
