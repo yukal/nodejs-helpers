@@ -22,9 +22,12 @@ before(async () => {
 // Check HtmlReader
 
 describe('Html Reader', () => {
-  let parser;
+  var parser;
 
-  before(() => {
+  before(async () => {
+    var stubFile = path.join(process.cwd(), './test/data/1.html');
+    var content = await fs.readFile(stubFile, 'utf8');
+
     parser = HtmlReader.from(checkData.htmlContent);
   });
 
@@ -77,7 +80,7 @@ describe('Html Reader', () => {
     it('findOne()', () => {
       parser.findOne('td');
 
-      const { attributes, coords } = parser._results;
+      var { attributes, coords } = parser._results;
 
       expect(attributes).property('item', '1');
       expect(coords).an('array').lengthOf(4);
@@ -90,19 +93,19 @@ describe('Html Reader', () => {
     });
 
     it('getInnerData()', () => {
-      const data = parser.findOne('td').getInnerData();
+      var data = parser.findOne('td').getInnerData();
       expect(data).equal('text1');
     });
 
     it('getOuterData()', () => {
-      const data = parser.findOne('td').getOuterData();
+      var data = parser.findOne('td').getOuterData();
       expect(data).equal('<td data-item="1">text1</td>');
     });
 
     it('pin()', () => {
       parser.findOne('td').pin('td');
 
-      const { attributes, coords } = parser._storage.td;
+      var { attributes, coords } = parser._storage.td;
 
       expect(attributes).property('item', '1');
       expect(coords).an('array').lengthOf(4);
@@ -129,8 +132,7 @@ describe('Html Reader', () => {
     it('item()', () => {
       parser.findAll('tr').item(0);
 
-      // expect(parser._results).an('object');
-      const { attributes, coords } = parser._results;
+      var { attributes, coords } = parser._results;
 
       expect(attributes).property('class', 'row');
       expect(coords).an('array').lengthOf(4);
@@ -140,8 +142,8 @@ describe('Html Reader', () => {
     it('data()', () => {
       parser.findAll('tr[class]');
 
-      const data = parser.data();
-      const expectedLength = parser._results.length;
+      var data = parser.data();
+      var expectedLength = parser._results.length;
 
       expect(data).an('array').lengthOf(expectedLength);
       expect(data[0]).an('object').property('class', 'row');

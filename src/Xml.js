@@ -61,8 +61,8 @@ const T_ARRAY = 2;
  * @returns A text or object with XML data
  */
 const XML = (textOrObject) => {
-  const methodName = typeof (textOrObject) === 'string' ? 'parse' : 'stringify';
-  const method = XML[methodName];
+  var methodName = typeof (textOrObject) === 'string' ? 'parse' : 'stringify';
+  var method = XML[methodName];
 
   return method.call(XML, textOrObject);
 };
@@ -75,12 +75,12 @@ const XML = (textOrObject) => {
  * @returns object
  */
 XML.parse = (xmlText) => {
-  const tree = {};
+  var tree = {};
 
   let matches = /<\?xml(.*?)\?>/im.exec(xmlText);
   if (matches !== null) {
-    const [row, params] = matches;
-    const attributes = XML.parseAttributes(params, XML_ATTR_AT);
+    var [row, params] = matches;
+    var attributes = XML.parseAttributes(params, XML_ATTR_AT);
 
     if (attributes.hasOwnProperty('@encoding')) {
       attributes['@encoding'] = attributes['@encoding'].toLowerCase();
@@ -93,8 +93,8 @@ XML.parse = (xmlText) => {
     });
   }
 
-  const reg = /<\/?([:\w_-]+)([^>]*)>/m;
-  const options = {
+  var reg = /<\/?([:\w_-]+)([^>]*)>/m;
+  var options = {
     matches: reg.exec(xmlText),
     depth: 0,
     tree,
@@ -103,8 +103,8 @@ XML.parse = (xmlText) => {
   };
 
   while (options.matches !== null) {
-    const singleClosed = options.matches[0].endsWith('/>');
-    const pairedClosed = options.matches[0].startsWith('</');
+    var singleClosed = options.matches[0].endsWith('/>');
+    var pairedClosed = options.matches[0].startsWith('</');
 
     if (singleClosed) {
 
@@ -135,11 +135,11 @@ XML.stringify = (object, options) => {
     return '';
   }
 
-  const clone = { ...object };
-  const initiatedOptions = stringifyInitOptions(options);
+  var clone = { ...object };
+  var initiatedOptions = stringifyInitOptions(options);
 
-  const params = stringifyParams(clone, initiatedOptions);
-  const body = XML.stringifyBody(clone, initiatedOptions);
+  var params = stringifyParams(clone, initiatedOptions);
+  var body = XML.stringifyBody(clone, initiatedOptions);
 
   return `<?xml ${params}?>${body}`;
 };
@@ -149,9 +149,9 @@ XML.stringifyBody = (object, options) => {
     return '';
   }
 
-  const initiatedOptions = stringifyInitOptions(options);
+  var initiatedOptions = stringifyInitOptions(options);
 
-  const pocket = {};
+  var pocket = {};
   let entries = Object.keys(object);
   let hasEntries = entries.length > 0;
   let indentDepth = 0;
@@ -169,12 +169,12 @@ XML.stringifyBody = (object, options) => {
   };
 
   while (hasEntries) {
-    const pocketItem = pocket[depth];
-    const indent = calcIndentation(indentDepth, initiatedOptions);
+    var pocketItem = pocket[depth];
+    var indent = calcIndentation(indentDepth, initiatedOptions);
 
     if (entries.length > 0) {
-      const key = entries[0];
-      const val = pocketItem.val[key];
+      var key = entries[0];
+      var val = pocketItem.val[key];
 
       if (key.startsWith(XML_ATTR_AT)) {
         pocketItem.attribs += ` ${key.slice(1)}="${val}"`;
@@ -186,7 +186,7 @@ XML.stringifyBody = (object, options) => {
       }
 
       if (key.startsWith(XML_ATTR_TEXT)) {
-        const indent = calcIndentation(indentDepth, initiatedOptions);
+        var indent = calcIndentation(indentDepth, initiatedOptions);
         const body = Array.isArray(val)
           ? val.join(indent) : val;
 
@@ -238,7 +238,7 @@ XML.stringifyBody = (object, options) => {
         case 'number':
         case 'bigint':
         case 'string':
-          const tagName = pocketItem.type === T_ARRAY
+          var tagName = pocketItem.type === T_ARRAY
             ? pocketItem.key : key;
 
           pocketItem.body += `${indent}<${tagName}>${val}</${tagName}>`;
@@ -256,7 +256,7 @@ XML.stringifyBody = (object, options) => {
         delete pocket[depth];
         depth--;
 
-        const pocketItem = pocket[depth];
+        var pocketItem = pocket[depth];
         entries = pocketItem.entries;
         entries.shift();
 
@@ -267,8 +267,8 @@ XML.stringifyBody = (object, options) => {
         if (type === T_OBJECT) {
           indentDepth--;
 
-          const indent = calcIndentation(indentDepth, initiatedOptions);
-          const tagName = pocketItem.type === T_ARRAY
+          var indent = calcIndentation(indentDepth, initiatedOptions);
+          var tagName = pocketItem.type === T_ARRAY
             ? pocketItem.key : key;
 
           pocketItem.body += body.length || hasChilds
@@ -290,14 +290,14 @@ XML.stringifyBody = (object, options) => {
 };
 
 XML.parseAttributes = (params, prefix = '') => {
-  const reg = /(?<key>[:\w_-]+)=["'](?<val>[^"']+)['"]/;
-  const attributes = {};
+  var reg = /(?<key>[:\w_-]+)=["'](?<val>[^"']+)['"]/;
+  var attributes = {};
   let matches = reg.exec(params);
   let length = 0;
 
   while (matches !== null) {
-    const [row, key, val] = matches;
-    const attrKey = prefix + key.toLowerCase();
+    var [row, key, val] = matches;
+    var attrKey = prefix + key.toLowerCase();
 
     params = params.slice(matches.index + row.length);
     matches = reg.exec(params);
@@ -313,11 +313,11 @@ XML.parseAttributes = (params, prefix = '') => {
 };
 
 XML.fetchAttributes = (object) => {
-  const attributes = {};
+  var attributes = {};
 
-  for (const keyName in object) {
+  for (var keyName in object) {
     if (keyName.startsWith(XML_ATTR_AT)) {
-      const key = keyName.slice(XML_ATTR_AT.length);
+      var key = keyName.slice(XML_ATTR_AT.length);
       attributes[key] = object[keyName];
     }
   }
@@ -326,11 +326,11 @@ XML.fetchAttributes = (object) => {
 };
 
 const xmlParseClosedSingleTag = (options) => {
-  const { depth, tree } = options;
-  const [row, tagName, params] = options.matches;
+  var { depth, tree } = options;
+  var [row, tagName, params] = options.matches;
 
-  const currItem = options.elements[depth];
-  const attributes = XML.parseAttributes(params);
+  var currItem = options.elements[depth];
+  var attributes = XML.parseAttributes(params);
 
   currItem.hasTags = true;
 
@@ -359,20 +359,20 @@ const xmlParseClosedSingleTag = (options) => {
 };
 
 const xmlParseClosedPairedTag = (options) => {
-  const [row, tagName, params] = options.matches;
-  const { elements, depth, text } = options;
+  var [row, tagName, params] = options.matches;
+  var { elements, depth, text } = options;
 
-  const prevItem = elements[depth - 1];
-  const currItem = elements[depth];
+  var prevItem = elements[depth - 1];
+  var currItem = elements[depth];
 
   if (!currItem.hasTags) {
-    const isCurrItemAnArray = Array.isArray(prevItem.data[currItem.tagName]);
+    var isCurrItemAnArray = Array.isArray(prevItem.data[currItem.tagName]);
 
     if (isCurrItemAnArray) {
 
-      const array = prevItem.data[currItem.tagName];
-      const lastIndex = array.length - 1;
-      const lastItem = array[lastIndex];
+      var array = prevItem.data[currItem.tagName];
+      var lastIndex = array.length - 1;
+      var lastItem = array[lastIndex];
 
       if (lastItem.attrsLength === 0) {
 
@@ -426,9 +426,9 @@ const xmlParseClosedPairedTag = (options) => {
 const xmlParseOpenedPairedTag = (options) => {
   options.depth++;
 
-  const { depth, tree, elements } = options;
-  const [row, tagName, params] = options.matches;
-  const attributes = XML.parseAttributes(params, XML_ATTR_AT);
+  var { depth, tree, elements } = options;
+  var [row, tagName, params] = options.matches;
+  var attributes = XML.parseAttributes(params, XML_ATTR_AT);
 
   if (depth === 1) {
 
@@ -436,8 +436,8 @@ const xmlParseOpenedPairedTag = (options) => {
 
   } else {
 
-    // const currEntry = { [tagName]: XML.parseAttributes(params, XML_ATTR_AT) };
-    const prev = elements[depth - 1];
+    // var currEntry = { [tagName]: XML.parseAttributes(params, XML_ATTR_AT) };
+    var prev = elements[depth - 1];
     prev.hasTags = true;
 
     if (options.text.length) {
@@ -501,7 +501,7 @@ const stringifyParams = (clone, options) => {
 
   for (const key in clone) {
     if (key.startsWith(XML_ATTR_AT)) {
-      const lowerKey = key.slice(1).toLowerCase();
+      var lowerKey = key.slice(1).toLowerCase();
       xmlParams += ` ${lowerKey}="${clone[key]}"`;
 
       delete clone[key];
@@ -512,14 +512,14 @@ const stringifyParams = (clone, options) => {
 };
 
 const stringifyInitOptions = (options) => {
-  const defaultOptions = {
+  var defaultOptions = {
     version: XML_DEFAULT_VERSION,
     encoding: XML_DEFAULT_ENCODING,
     breakLine: XML_DEFAULT_BR,
     indentation: XML_DEFAULT_INDENT,
   };
 
-  const initOptions = Type(options) === 'object'
+  var initOptions = Type(options) === 'object'
     ? { ...options } : {};
 
   for (const key in defaultOptions) {
@@ -532,9 +532,9 @@ const stringifyInitOptions = (options) => {
 };
 
 const calcIndentation = (depth, options) => {
-  const { breakLine: br } = options;
+  var { breakLine: br } = options;
 
-  const space = depth > 0
+  var space = depth > 0
     ? ' '.repeat(depth * 2)
     : '';
 
@@ -542,7 +542,7 @@ const calcIndentation = (depth, options) => {
 };
 
 const Type = (obj) => {
-  const signature = Object.prototype.toString.call(obj);
+  var signature = Object.prototype.toString.call(obj);
   return signature.slice(8, -1).toLowerCase();
 }
 

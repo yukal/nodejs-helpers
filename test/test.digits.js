@@ -12,7 +12,7 @@ import {
 } from '../src/Digits.js';
 
 describe('Bytes & Digits', () => {
-  const dataset = [
+  var dataset = [
     ['000', '6400', 'zeros'],
     ['011', '6501', 'ones'],
     ['022', '6602', 'deuces'],
@@ -33,14 +33,14 @@ describe('Bytes & Digits', () => {
   describe('digitsToBytes()', () => {
     dataset.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
-        const data = Digits.digitsToBytes(value);
+        var data = digitsToBytes(value);
         expect(data.toString('hex')).equal(expected)
       });
     });
   });
 
   describe('bytesToDigits()', () => {
-    const checkReversed = dataset.map(a => [a[1], a[0], a[2]]);
+    var checkReversed = dataset.map(a => [a[1], a[0], a[2]]);
 
     checkReversed.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
@@ -51,18 +51,18 @@ describe('Bytes & Digits', () => {
 });
 
 describe('Bytes & Size', () => {
-  const KILO_BYTE = 1024;
-  const MEGA_BYTE = Math.pow(KILO_BYTE, 2);
-  const GIGA_BYTE = Math.pow(KILO_BYTE, 3);
-  const TERA_BYTE = Math.pow(KILO_BYTE, 4);
-  const PETA_BYTE = Math.pow(KILO_BYTE, 5);
-  const EXA_BYTE = Math.pow(KILO_BYTE, 6);
-  const ZETTA_BYTE = Math.pow(KILO_BYTE, 7);
-  const YOTTA_BYTE = Math.pow(KILO_BYTE, 8);
-  const BRONTO_BYTE = Math.pow(KILO_BYTE, 9);
+  var KILO_BYTE = 1024;
+  var MEGA_BYTE = Math.pow(KILO_BYTE, 2);
+  var GIGA_BYTE = Math.pow(KILO_BYTE, 3);
+  var TERA_BYTE = Math.pow(KILO_BYTE, 4);
+  var PETA_BYTE = Math.pow(KILO_BYTE, 5);
+  var EXA_BYTE = Math.pow(KILO_BYTE, 6);
+  var ZETTA_BYTE = Math.pow(KILO_BYTE, 7);
+  var YOTTA_BYTE = Math.pow(KILO_BYTE, 8);
+  var BRONTO_BYTE = Math.pow(KILO_BYTE, 9);
 
   describe('bytesToShortSize()', () => {
-    const checkBytesToShortSize = [
+    var checkBytesToShortSize = [
       ['98b', 'byte', 98],
       ['1Kb', 'kilo', KILO_BYTE],
       ['1Mb', 'mega', MEGA_BYTE],
@@ -83,7 +83,7 @@ describe('Bytes & Size', () => {
   });
 
   describe('bytesToFixedSize()', () => {
-    const checkBytesToFixedSize = [
+    var checkBytesToFixedSize = [
       ['98.0b', 'byte', 98],
       ['1.0Kb', 'kilo', KILO_BYTE],
       ['1.0Mb', 'mega', MEGA_BYTE],
@@ -106,11 +106,11 @@ describe('Bytes & Size', () => {
 
 describe('Credit Card', () => {
   describe('getCreditCardMaskN16()', () => {
-    const value = '1234567890123456';
-    const expected = '1234 5678 9012 3456';
+    var value = '1234567890123456';
+    var expected = '1234 5678 9012 3456';
 
     it(`"${value}" -> "${expected}"`, () => {
-      const data = Digits.getCreditCardMaskN16(value);
+      var data = getCreditCardMaskN16(value);
       expect(data).equal(expected);
     });
   });
