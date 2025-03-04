@@ -40,4 +40,4 @@ Tag.singleList = new Set([
  */
 Tag.isSingle = (tagName) => Tag.singleList.has(tagName);
 
-module.exports = Tag;
+export default Tag;

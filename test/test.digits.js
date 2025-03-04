@@ -1,9 +1,18 @@
 'use strict';
 
-const Digits = require('../src/Digits');
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
+import {
+  bytesToDigits,
+  bytesToFixedSize,
+  bytesToShortSize,
+  digitsToBytes,
+  getCreditCardMaskN16,
+} from '../src/Digits.js';
 
 describe('Bytes & Digits', () => {
-  const dataset = [
+  var dataset = [
     ['000', '6400', 'zeros'],
     ['011', '6501', 'ones'],
     ['022', '6602', 'deuces'],
@@ -24,36 +33,36 @@ describe('Bytes & Digits', () => {
   describe('digitsToBytes()', () => {
     dataset.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
-        const data = Digits.digitsToBytes(value);
-        expect(data.toString('hex')).equal(expected)
+        var data = digitsToBytes(value);
+        assert.strictEqual(data.toString('hex'), expected);
       });
     });
   });
 
   describe('bytesToDigits()', () => {
-    const checkReversed = dataset.map(a => [a[1], a[0], a[2]]);
+    var checkReversed = dataset.map(a => [a[1], a[0], a[2]]);
 
     checkReversed.map(([value, expected, groupName]) => {
       it(`"${value}" -> "${expected}" ${groupName}`, () => {
-        expect(Digits.bytesToDigits(Buffer.from(value, 'hex'))).equal(expected);
+        assert.strictEqual(bytesToDigits(Buffer.from(value, 'hex')), expected);
       });
     });
   });
 });
 
 describe('Bytes & Size', () => {
-  const KILO_BYTE = 1024;
-  const MEGA_BYTE = Math.pow(KILO_BYTE, 2);
-  const GIGA_BYTE = Math.pow(KILO_BYTE, 3);
-  const TERA_BYTE = Math.pow(KILO_BYTE, 4);
-  const PETA_BYTE = Math.pow(KILO_BYTE, 5);
-  const EXA_BYTE = Math.pow(KILO_BYTE, 6);
-  const ZETTA_BYTE = Math.pow(KILO_BYTE, 7);
-  const YOTTA_BYTE = Math.pow(KILO_BYTE, 8);
-  const BRONTO_BYTE = Math.pow(KILO_BYTE, 9);
+  var KILO_BYTE = 1024;
+  var MEGA_BYTE = Math.pow(KILO_BYTE, 2);
+  var GIGA_BYTE = Math.pow(KILO_BYTE, 3);
+  var TERA_BYTE = Math.pow(KILO_BYTE, 4);
+  var PETA_BYTE = Math.pow(KILO_BYTE, 5);
+  var EXA_BYTE = Math.pow(KILO_BYTE, 6);
+  var ZETTA_BYTE = Math.pow(KILO_BYTE, 7);
+  var YOTTA_BYTE = Math.pow(KILO_BYTE, 8);
+  var BRONTO_BYTE = Math.pow(KILO_BYTE, 9);
 
   describe('bytesToShortSize()', () => {
-    const checkBytesToShortSize = [
+    var checkBytesToShortSize = [
       ['98b', 'byte', 98],
       ['1Kb', 'kilo', KILO_BYTE],
       ['1Mb', 'mega', MEGA_BYTE],
@@ -68,13 +77,13 @@ describe('Bytes & Size', () => {
 
     checkBytesToShortSize.map(([expected, name, value]) => {
       it(`1 ${name} = "${expected}"`, () => {
-        expect(Digits.bytesToShortSize(value)).equal(expected);
+        assert.strictEqual(bytesToShortSize(value), expected);
       });
     });
   });
 
   describe('bytesToFixedSize()', () => {
-    const checkBytesToFixedSize = [
+    var checkBytesToFixedSize = [
       ['98.0b', 'byte', 98],
       ['1.0Kb', 'kilo', KILO_BYTE],
       ['1.0Mb', 'mega', MEGA_BYTE],
@@ -89,7 +98,7 @@ describe('Bytes & Size', () => {
 
     checkBytesToFixedSize.map(([expected, name, value]) => {
       it(`1 ${name} = "${expected}"`, () => {
-        expect(Digits.bytesToFixedSize(value)).equal(expected);
+        assert.strictEqual(bytesToFixedSize(value), expected);
       });
     });
   });
@@ -97,12 +106,12 @@ describe('Bytes & Size', () => {
 
 describe('Credit Card', () => {
   describe('getCreditCardMaskN16()', () => {
-    const value = '1234567890123456';
-    const expected = '1234 5678 9012 3456';
+    var value = '1234567890123456';
+    var expected = '1234 5678 9012 3456';
 
     it(`"${value}" -> "${expected}"`, () => {
-      const data = Digits.getCreditCardMaskN16(value);
-      expect(data).equal(expected);
+      var data = getCreditCardMaskN16(value);
+      assert.strictEqual(data, expected);
     });
   });
 });

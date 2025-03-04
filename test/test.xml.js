@@ -1,41 +1,44 @@
 'use strict';
 
-const XML = require('../src/Xml');
-const checkData = {};
+import assert from 'node:assert';
+import { describe, it, before } from 'node:test';
 
-before(async () => {
-  const Fs = require('fs');
-  const Path = require('path');
+import path from 'path';
+import fs from 'fs/promises';
 
-  const PATH_DATA = Path.join(process.cwd(), './test/data');
-  const xmlFilePath = Path.join(PATH_DATA, '1.xml');
-
-  checkData.xmlContent = await Fs.promises.readFile(xmlFilePath, 'utf8');
-});
+import XML from '../src/Xml.js';
 
 // ..............................
 // check xml
 
 describe('XML', () => {
-  let xml;
+  var xml;
+
+  before(async () => {
+    var stabFile = path.join(process.cwd(), './test/data/1.xml');      
+    var content = await fs.readFile(stabFile, 'utf8');
+
+    xml = XML(content);
+  });
+
+  // beforeEach(() => console.log('about to run a test'));
 
   describe('parsing', () => {
-    it('parsed XML should be a filled object', () => {
-      xml = XML(checkData.xmlContent);
-      expect(xml).an('object').not.empty;
+    it('parsed XML should be a filled object', async () => {
+      assert.equal(typeof(xml), 'object');
+      assert.ok(Object.keys(xml).length > 0);
     });
 
     it('xml attributes', () => {
-      expect(xml).property('@version', '1.0');
-      expect(xml).property('@encoding', 'utf-8');
+      assert.equal(xml['@version'], '1.0');
+      assert.equal(xml['@encoding'], 'utf-8');
     });
 
     it('inner items', () => {
-      expect(xml).property('data');
-      expect(xml.data).property('empty_string', '');
-      expect(xml.data).property('empty_object').eql({});
-
-      expect(xml.data.array_with_strings).eql([
+      assert.ok(xml.hasOwnProperty('data'));
+      assert.equal(xml.data['empty_string'], '');
+      assert.deepEqual(xml.data['empty_object'], {});
+      assert.deepEqual(xml.data.array_with_strings, [
         'item1',
         '',
         'item2',
@@ -43,12 +46,7 @@ describe('XML', () => {
         'item3'
       ]);
 
-      expect(xml.data).property('empty_object');
-      expect(xml.data.empty_object)
-        .an('object')
-        .empty;
-
-      expect(xml.data.array_with_objects).eql([{
+      assert.deepEqual(xml.data.array_with_objects, [{
         'attr1': 'val1',
         'attr2': 'val2',
       },
@@ -57,21 +55,21 @@ describe('XML', () => {
         'attr1': 'val1',
         'attr2': 'val2',
       }]);
-      expect(xml.data.array_with_objects[0]).property('attrsLength', 2);
-      expect(xml.data.array_with_objects[1]).property('attrsLength', 0);
-      expect(xml.data.array_with_objects[2]).property('attrsLength', 2);
 
-      expect(xml.data).property('text', 'text data');
+      assert.equal(xml.data.array_with_objects[0].attrsLength, 2);
+      assert.equal(xml.data.array_with_objects[1].attrsLength, 0);
+      assert.equal(xml.data.array_with_objects[2].attrsLength, 2);
+      assert.equal(xml.data.text, 'text data');
 
-      expect(xml.data).property('text_with_attributes');
-      expect(xml.data.text_with_attributes).eql({
+      assert.ok(xml.data.hasOwnProperty('text_with_attributes'));
+      assert.deepEqual(xml.data.text_with_attributes, {
         '@id': 'baf9df73',
         '@type': 'txt',
         '&text': 'text data',
       });
 
-      expect(xml.data).property('complex_object');
-      expect(xml.data.complex_object).eql({
+      assert.ok(xml.data.hasOwnProperty('complex_object'));
+      assert.deepEqual(xml.data.complex_object, {
         array: [
           { 'name': 'item1' },
           { '@name': 'item2', '&text': 'array_item_txt2' },
@@ -118,50 +116,49 @@ describe('XML', () => {
 
   describe('stringify', () => {
     it('empty xml', () => {
-      const text = XML.stringify();
-      expect(text).eq('');
+      assert.equal(XML.stringify(), '');
     });
 
     it('empty xml with default params', () => {
-      const text = XML.stringify({});
-      expect(text).eq('<?xml version="1.0" encoding="UTF-8"?>');
+      var text = XML.stringify({});
+      assert.equal(text, '<?xml version="1.0" encoding="UTF-8"?>');
     });
 
     it('empty xml with specific params', () => {
-      const text = XML.stringify({}, {
+      var text = XML.stringify({}, {
         version: '2.0',
         encoding: 'cp1251',
       });
 
-      expect(text).eq('<?xml version="2.0" encoding="cp1251"?>');
+      assert.equal(text, '<?xml version="2.0" encoding="cp1251"?>');
     });
 
     it('empty string', () => {
-      const text = XML.stringifyBody({ data: '' });
-      expect(text).eq('\n<data></data>');
+      var text = XML.stringifyBody({ data: '' });
+      assert.equal(text, '\n<data></data>');
     });
 
     it('empty object', () => {
-      const text = XML.stringifyBody({ data: {} });
-      expect(text).eq('\n<data />');
+      var text = XML.stringifyBody({ data: {} });
+      assert.equal(text, '\n<data />');
     });
 
     it('array with strings', () => {
-      const data = ['item1', 'item2', 'item3'];
-      const expectingRows = [
+      var data = ['item1', 'item2', 'item3'];
+      var expectingRows = [
         '<data>item1</data>',
         '<data>item2</data>',
         '<data>item3</data>'
       ];
 
-      const text = XML.stringifyBody({ data });
-      const result = expectingRows.join('\n');
+      var text = XML.stringifyBody({ data });
+      var result = expectingRows.join('\n');
 
-      expect(text).eq(`\n${result}`);
+      assert.equal(text, `\n${result}`);
     });
 
     it('array with objects', () => {
-      const data = [
+      var data = [
         {
           '@attr1': 'val1',
           '@attr2': 'val2',
@@ -173,7 +170,7 @@ describe('XML', () => {
         }
       ];
 
-      const expectingRows = [
+      var expectingRows = [
         '<data attr1="val1" attr2="val2" />',
         '<data />',
         '<data>',
@@ -182,45 +179,46 @@ describe('XML', () => {
         '</data>',
       ];
 
-      const text = XML.stringifyBody({ data });
-      const result = expectingRows.join('\n');
+      var text = XML.stringifyBody({ data });
+      var result = expectingRows.join('\n');
 
-      expect(text).eq(`\n${result}`);
+      assert.equal(text, `\n${result}`);
     });
 
     it('object with attributes', () => {
-      const data = {
+      var data = {
         '@name': 'JUPITER',
         '@alias': 'JPTR',
       };
 
-      const text = XML.stringifyBody({ data });
-      expect(text).eq(`\n<data name="JUPITER" alias="JPTR" />`);
+      var text = XML.stringifyBody({ data });
+      assert.equal(text, `\n<data name="JUPITER" alias="JPTR" />`);
     });
 
     it('text', () => {
-      const data = 'text data';
-      const text = XML.stringifyBody({ data });
-      expect(text).eq(`\n<data>text data</data>`);
+      var data = 'text data';
+      var text = XML.stringifyBody({ data });
+
+      assert.equal(text, `\n<data>text data</data>`);
     });
 
     it('text with attributes', () => {
-      const data = {
+      var data = {
         '@id': 'baf9df73',
         '@type': 'txt',
         '&text': 'text data',
       };
 
-      const expectingRows = [
+      var expectingRows = [
         '<data id="baf9df73" type="txt">',
         '  text data',
         '</data>',
       ];
 
-      const text = XML.stringifyBody({ data });
-      const result = expectingRows.join('\n');
+      var text = XML.stringifyBody({ data });
+      var result = expectingRows.join('\n');
 
-      expect(text).eq(`\n${result}`);
+      assert.equal(text, `\n${result}`);
     });
   });
 
